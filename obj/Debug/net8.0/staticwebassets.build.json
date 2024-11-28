@@ -1,0 +1,58 @@
+{
+  "Version": 1,
+  "Hash": "JZ736ra7rI7icgY68gMPMelAZ/XBHNZtIGHZ7uuZqzA=",
+  "Source": "SignalRWebpack",
+  "BasePath": "_content/SignalRWebpack",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "SignalRWebpack\\wwwroot",
+      "Source": "SignalRWebpack",
+      "ContentRoot": "E:\\Projects\\SignalR_Server\\SignalRWebpack\\wwwroot\\",
+      "BasePath": "_content/SignalRWebpack",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "E:\\Projects\\SignalR_Server\\SignalRWebpack\\wwwroot\\js\\chat.js",
+      "SourceId": "SignalRWebpack",
+      "SourceType": "Discovered",
+      "ContentRoot": "E:\\Projects\\SignalR_Server\\SignalRWebpack\\wwwroot\\",
+      "BasePath": "_content/SignalRWebpack",
+      "RelativePath": "js/chat.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\chat.js"
+    },
+    {
+      "Identity": "E:\\Projects\\SignalR_Server\\SignalRWebpack\\wwwroot\\js\\signalr\\dist\\browser\\signalr.js",
+      "SourceId": "SignalRWebpack",
+      "SourceType": "Discovered",
+      "ContentRoot": "E:\\Projects\\SignalR_Server\\SignalRWebpack\\wwwroot\\",
+      "BasePath": "_content/SignalRWebpack",
+      "RelativePath": "js/signalr/dist/browser/signalr.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\signalr\\dist\\browser\\signalr.js"
+    }
+  ]
+}

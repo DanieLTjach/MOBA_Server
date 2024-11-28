@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "/W9ue5HnYpU=",
+  "success": true,
+  "projectFilePath": "E:\\Projects\\SignalR_Server\\SignalRWebpack\\SignalRWebpack.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Daniel\\.nuget\\packages\\microsoft.typescript.msbuild\\5.6.2\\microsoft.typescript.msbuild.5.6.2.nupkg.sha512"
+  ],
+  "logs": []
+}

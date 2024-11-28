@@ -1,0 +1,39 @@
+@page
+<div class="container">
+    <div class="row p-1">
+        <div class="col-1">Command</div>
+        <div class="col-5"><input type="text" class="w-100" id="messageInput" /></div>
+    </div>
+    <div class="row p-1">
+        <div class="col-6 text-end">
+            <input type="button" id="sendButton" value="Send Message" />
+        </div>
+    </div>
+    <div class="row p-1">
+        <div class="col-6">
+            <hr />
+        </div>
+    </div>
+    <div class="row p-1">
+        <div class="col-6">
+            <ul id="messagesList"></ul>
+        </div>
+    </div>
+    <div class = "map">
+        <canvas id="canvas" width="600" height="600" style="border: 1px solid black;"></canvas>
+    </div>
+    <div class = "player-list">
+        <div class = "blue-team">
+            <h2>Blue Team</h2>
+            <ul id="blue_team_list"></ul>
+        </div>
+        <div class = "red-team">
+            <h2>Red Team</h2>
+            <ul id="red_team_list"></ul>
+        </div>
+        <input type="button" id="actualButton" value="Actualize" />
+    </div>
+
+</div>
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/chat.js"></script>
