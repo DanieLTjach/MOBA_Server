@@ -42,8 +42,6 @@ E:\Projects\MOBA_Server\obj\Debug\net8.0\SignalRWebpack.AssemblyInfoInputs.cache
 E:\Projects\MOBA_Server\obj\Debug\net8.0\SignalRWebpack.AssemblyInfo.cs
 E:\Projects\MOBA_Server\obj\Debug\net8.0\SignalRWebpack.csproj.CoreCompileInputs.cache
 E:\Projects\MOBA_Server\obj\Debug\net8.0\SignalRWebpack.MvcApplicationPartsAssemblyInfo.cache
-E:\Projects\MOBA_Server\obj\Debug\net8.0\SignalRWebpack.RazorAssemblyInfo.cache
-E:\Projects\MOBA_Server\obj\Debug\net8.0\SignalRWebpack.RazorAssemblyInfo.cs
 E:\Projects\MOBA_Server\obj\Debug\net8.0\SignalRWebpack.sourcelink.json
 E:\Projects\MOBA_Server\obj\Debug\net8.0\scopedcss\bundle\SignalRWebpack.styles.css
 E:\Projects\MOBA_Server\obj\Debug\net8.0\staticwebassets.build.json

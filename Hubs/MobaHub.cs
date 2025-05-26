@@ -23,7 +23,6 @@ namespace MobaSignalRServer
         {
             _logger.LogInformation($"Client disconnected: {Context.ConnectionId}");
             
-            // Find and remove player from any match they're in
             foreach (var match in _gameState.GetAvailableMatches())
             {
                 if (match.Players.ContainsKey(Context.ConnectionId))
@@ -56,7 +55,6 @@ namespace MobaSignalRServer
                 LastUpdateTime = DateTime.UtcNow
             };
 
-            // Store player data
             await Clients.Caller.SendAsync("RegistrationConfirmed", player);
             _logger.LogInformation($"Player registered: {username}, Hero ID: {heroId}");
         }
@@ -68,8 +66,7 @@ namespace MobaSignalRServer
         public async Task CreateAndJoinMatch()
         {
             var match = _gameState.CreateMatch();
-            
-            // Add player to match if matchId is not null
+
             if (!string.IsNullOrEmpty(match?.MatchId))
             {
                 await JoinMatch(match.MatchId);
@@ -96,18 +93,16 @@ namespace MobaSignalRServer
                 return;
             }
 
-            // Add player to the match group
             await Groups.AddToGroupAsync(Context.ConnectionId, matchId);
-            
-            // Get player data from connection
+
             if (!match.Players.TryGetValue(Context.ConnectionId, out var player))
             {
-                // If not found, create a default player
+
                 player = new Player
                 {
                     ConnectionId = Context.ConnectionId,
                     Username = $"Player_{Context.ConnectionId.Substring(0, 5)}",
-                    HeroId = 1, // Default hero
+                    HeroId = 1,
                     Health = 100,
                     Mana = 100,
                     IsAlive = true,
@@ -116,13 +111,10 @@ namespace MobaSignalRServer
                 };
             }
 
-            // Add player to match
             _ = _gameState.AddPlayerToMatch(matchId, player);
-            
-            // Notify others of new player
+
             await Clients.Group(matchId).SendAsync("PlayerJoined", player);
-            
-            // Send current match state to the new player
+
             await Clients.Caller.SendAsync("MatchState", match);
             
             _logger.LogInformation($"Player {player.Username} joined match {matchId}");
@@ -159,7 +151,6 @@ namespace MobaSignalRServer
             player.Position = new Vector2(x, y);
             player.LastUpdateTime = DateTime.UtcNow;
             
-            // Broadcast position update to all players in the match
             await Clients.Group(matchId).SendAsync("PlayerMoved", Context.ConnectionId, x, y);
         }
 
@@ -171,8 +162,6 @@ namespace MobaSignalRServer
                 return;
             }
 
-            // Implement ability logic here
-            // For simplicity, just broadcast the ability use
             await Clients.Group(matchId).SendAsync("AbilityUsed", Context.ConnectionId, abilityId, targetX, targetY);
             _logger.LogInformation($"Player {player.Username} used ability {abilityId}");
         }
@@ -187,7 +176,6 @@ namespace MobaSignalRServer
                 return;
             }
 
-            // Simple attack logic - reduce health by 10
             target.Health = Math.Max(0, target.Health - 10);
             
             if (target.Health <= 0)
@@ -195,9 +183,6 @@ namespace MobaSignalRServer
                 target.IsAlive = false;
                 await Clients.Group(matchId).SendAsync("PlayerDied", targetPlayerId);
                 _logger.LogInformation($"Player {target.Username} died");
-                
-                // Respawn logic could be added here
-                // Implement respawn timer and logic
             }
 
             await Clients.Group(matchId).SendAsync("PlayerAttacked", Context.ConnectionId, targetPlayerId, target.Health);
@@ -215,7 +200,6 @@ namespace MobaSignalRServer
                 return;
             }
 
-            // Get the player's username
             string username = "Unknown";
             var match = _gameState.GetMatch(matchId);
             if (match != null && match.Players.TryGetValue(Context.ConnectionId, out var player))
@@ -235,7 +219,6 @@ namespace MobaSignalRServer
                 return;
             }
 
-            // Get all players on the same team and send message only to them
             foreach (var player in match.Players.Values)
             {
                 if (player.TeamId == teamId && !string.IsNullOrEmpty(player.ConnectionId))

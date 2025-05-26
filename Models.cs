@@ -9,7 +9,7 @@ namespace MobaSignalRServer.Models
         public string? ConnectionId { get; set; }
         public string? Username { get; set; }
         public int HeroId { get; set; }
-        public int TeamId { get; set; } // 1 or 2 for typical MOBA teams
+        public int TeamId { get; set; } 
         public Vector2 Position { get; set; }
         public float Health { get; set; }
         public float Mana { get; set; }
@@ -38,8 +38,8 @@ namespace MobaSignalRServer.Models
     public class GameObjectState
     {
         public int Id { get; set; }
-        public string? Type { get; set; } // Tower, Creep, Jungle, etc.
-        public int TeamId { get; set; } // 0 for neutral, 1 or 2 for teams
+        public string? Type { get; set; }
+        public int TeamId { get; set; } 
         public Vector2 Position { get; set; }
         public float Health { get; set; }
         public bool IsAlive { get; set; }
@@ -66,7 +66,7 @@ namespace MobaSignalRServer.Models
         public string? PlayerId { get; set; }
         public string? PlayerName { get; set; }
         public string? Message { get; set; }
-        public int TeamId { get; set; } // 0 for all, 1 or 2 for team chat
+        public int TeamId { get; set; } 
         public DateTime SentTime { get; set; }
     }
 }

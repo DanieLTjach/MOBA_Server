@@ -39,7 +39,6 @@ namespace MobaSignalRServer.Services
         {
             if (_activeMatches.TryGetValue(matchId, out var match))
             {
-                // Assign player to team
                 AssignPlayerTeam(match, player);
 
                 if (!string.IsNullOrEmpty(player.ConnectionId))
@@ -57,9 +56,8 @@ namespace MobaSignalRServer.Services
             return false;
         }
 
-        private void AssignPlayerTeam(GameMatch match, Player player)
+        private static void AssignPlayerTeam(GameMatch match, Player player)
         {
-            // Simple team balancing - count players on each team and assign to the team with fewer players
             int team1Count = match.Players.Values.Count(p => p.TeamId == 1);
             int team2Count = match.Players.Values.Count(p => p.TeamId == 2);
             
@@ -74,7 +72,6 @@ namespace MobaSignalRServer.Services
                 {
                     _logger.LogInformation($"Player {connectionId} removed from match {matchId}");
                     
-                    // If no players left, clean up the match
                     if (match.Players.Count == 0)
                     {
                         _ = _activeMatches.Remove(matchId);
@@ -92,7 +89,7 @@ namespace MobaSignalRServer.Services
             var result = new List<GameMatch>();
             foreach (var match in _activeMatches.Values)
             {
-                if (match.Players.Count < 10) // Max 10 players for a typical MOBA
+                if (match.Players.Count < 10) 
                 {
                     result.Add(match);
                 }
@@ -116,15 +113,13 @@ namespace MobaSignalRServer.Services
             _logger.LogInformation("All matches have been cleaned up");
         }
 
-        // Game state update methods
         public void UpdatePlayerHealth(string matchId, string playerId, float newHealth)
         {
             if (_activeMatches.TryGetValue(matchId, out var match) && 
                 match.Players.TryGetValue(playerId, out var player))
             {
                 player.Health = newHealth;
-                
-                // Check for player death
+
                 if (player.Health <= 0 && player.IsAlive)
                 {
                     player.IsAlive = false;

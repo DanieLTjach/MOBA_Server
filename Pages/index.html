@@ -205,7 +205,7 @@
 
     <script>
         // Connection settings
-        const serverUrl = "http://localhost:5201/mobahub"; // Change if your server runs on a different port
+        const serverUrl = "http://localhost:5201/mobahub"; 
         let connection = null;
         let currentPlayer = null;
         let currentMatch = null;
@@ -267,7 +267,6 @@
                     .withAutomaticReconnect()
                     .build();
 
-                // Set up SignalR event handlers
                 setupSignalRHandlers();
 
                 await connection.start();
@@ -305,7 +304,6 @@
             document.getElementById('connectionStatus').textContent = "Status: " + status;
         }
 
-        // Set up all the SignalR event handlers
         function setupSignalRHandlers() {
             connection.on("RegistrationConfirmed", (player) => {
                 console.log("Registration confirmed:", player);
@@ -379,7 +377,6 @@
             connection.on("AbilityUsed", (connectionId, abilityId, targetX, targetY) => {
                 const username = players[connectionId]?.username || "Unknown";
                 addChatMessage("System", `${username} used ability ${abilityId}`, "system");
-                // Visual effect could be added here
             });
 
             connection.on("ChatMessage", (username, message) => {
@@ -392,7 +389,6 @@
             });
         }
 
-        // Player Registration
         async function registerPlayer() {
             const username = document.getElementById('username').value.trim();
             const heroId = document.getElementById('heroSelection').value;
@@ -411,7 +407,6 @@
             }
         }
 
-        // Match Management
         async function getAvailableMatches() {
             try {
                 await connection.invoke("GetAvailableMatches");
@@ -460,8 +455,7 @@
 
         function displayMatchInfo(match) {
             currentMatchIdSpan.textContent = match.matchId;
-            
-            // Store all players
+
             players = {};
             Object.values(match.players).forEach(player => {
                 players[player.connectionId] = player;
@@ -495,8 +489,7 @@
                 } else {
                     team2PlayersList.appendChild(playerItem);
                 }
-                
-                // Add click event to target player for attack
+
                 playerItem.addEventListener('click', () => {
                     if (player.connectionId !== currentPlayer.connectionId && player.isAlive) {
                         selectedTarget = player.connectionId;
@@ -506,15 +499,13 @@
             });
         }
 
-        // Game Interaction
         async function handleCanvasClick(event) {
             if (!currentMatch || !currentPlayer) return;
             
             const rect = gameCanvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-            
-            // If we have a selected target, attack them
+ 
             if (selectedTarget) {
                 try {
                     await connection.invoke("AttackPlayer", currentMatch.matchId, selectedTarget);
@@ -525,13 +516,11 @@
                 }
                 return;
             }
-            
-            // Otherwise, move to the clicked position
+
             try {
                 await connection.invoke("MovePlayer", currentMatch.matchId, x, y);
                 console.log("Move sent to:", x, y);
-                
-                // Update locally for immediate feedback
+
                 if (currentPlayer) {
                     currentPlayer.position = { x, y };
                     players[currentPlayer.connectionId] = currentPlayer;
@@ -543,13 +532,12 @@
         }
 
         function handleCanvasMouseMove(event) {
-            // Could implement hover effects or target preview
+
         }
 
         async function useAbility(abilityId) {
             if (!currentMatch || !currentPlayer) return;
-            
-            // Get canvas center as default target
+
             const targetX = gameCanvas.width / 2;
             const targetY = gameCanvas.height / 2;
             
@@ -583,22 +571,21 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // Game Rendering
+
         function drawGame() {
-            // Clear canvas
+  
             ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
             
-            // Draw background (simple grid)
+
             drawGrid();
             
-            // Draw players
+
             Object.values(players).forEach(player => {
                 if (player.isAlive) {
                     drawPlayer(player);
                 }
             });
-            
-            // Draw current player with highlight
+
             if (currentPlayer && players[currentPlayer.connectionId]?.isAlive) {
                 const player = players[currentPlayer.connectionId];
                 drawPlayer(player, true);
@@ -609,13 +596,13 @@
             ctx.strokeStyle = '#ddd';
             ctx.beginPath();
             
-            // Vertical lines
+
             for (let x = 0; x <= gameCanvas.width; x += 50) {
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, gameCanvas.height);
             }
             
-            // Horizontal lines
+
             for (let y = 0; y <= gameCanvas.height; y += 50) {
                 ctx.moveTo(0, y);
                 ctx.lineTo(gameCanvas.width, y);
@@ -628,11 +615,9 @@
             const x = player.position.x || 0;
             const y = player.position.y || 0;
             const radius = isCurrentPlayer ? 15 : 10;
-            
-            // Team color
+
             const teamColor = player.teamId === 1 ? 'cornflowerblue' : 'crimson';
             
-            // Draw player circle
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI * 2);
             ctx.fillStyle = teamColor;
@@ -643,21 +628,18 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
             }
-            
-            // Draw health bar
+
             ctx.fillStyle = 'black';
             ctx.fillRect(x - 15, y - 25, 30, 5);
             ctx.fillStyle = 'green';
             ctx.fillRect(x - 15, y - 25, 30 * (player.health / 100), 5);
-            
-            // Draw username
+
             ctx.fillStyle = 'black';
             ctx.font = '12px Arial';
             ctx.textAlign = 'center';
             ctx.fillText(player.username, x, y - 30);
         }
 
-        // Helper functions
         function showPanel(panel) {
             panel.classList.remove('hidden');
         }
@@ -666,7 +648,6 @@
             panel.classList.add('hidden');
         }
 
-        // Initialize the game display
         drawGame();
     </script>
 </body>
