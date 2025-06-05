@@ -6,16 +6,18 @@ namespace MobaSignalRServer.Models
 {
     public class Player
     {
-        public string? ConnectionId { get; set; }
-        public string? Username { get; set; }
+        public string ConnectionId { get; set; } = "";
+        public string Username { get; set; } = "";
         public int HeroId { get; set; }
-        public int TeamId { get; set; } 
+        public int TeamId { get; set; }
+
         public Vector2 Position { get; set; }
         public float Health { get; set; }
         public float Mana { get; set; }
         public bool IsAlive { get; set; }
         public DateTime LastUpdateTime { get; set; }
         public DateTime LastDeathTime { get; set; }
+
         public int Level { get; set; } = 1;
         public int Experience { get; set; } = 0;
         public int Kills { get; set; } = 0;
@@ -25,13 +27,18 @@ namespace MobaSignalRServer.Models
 
     public class GameMatch
     {
-        public string? MatchId { get; set; }
-        public Dictionary<string, Player> Players { get; set; } = new Dictionary<string, Player>();
+        public string MatchId { get; set; } = "";
+        
+        public Dictionary<string, Player> Players { get; set; } = new();
+
         public DateTime StartTime { get; set; }
         public bool IsActive { get; set; }
+
         public int Team1Score { get; set; } = 0;
         public int Team2Score { get; set; } = 0;
-        public Dictionary<int, GameObjectState> GameObjects { get; set; } = new Dictionary<int, GameObjectState>();
+
+        public Dictionary<int, GameObjectState> GameObjects { get; set; } = new();
+
         public MatchState State { get; set; } = MatchState.Waiting;
     }
 

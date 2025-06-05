@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MobaSignalRServer.Services;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace MobaSignalRServer
 {
@@ -12,45 +14,56 @@ namespace MobaSignalRServer
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container
-            _ = builder.Services.AddSignalR();
-            _ = builder.Services.AddSingleton<GameStateManager>();
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.ListenAnyIP(5201, options =>
+                {
+                    options.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+                });
+            });
 
-            // Add CORS
+            _ = builder.Services.AddControllers();
+            _ = builder.Services.AddSignalR()
+                .AddNewtonsoftJsonProtocol();
+
+            _ = builder.Services.AddSingleton<GameStateManager>();
+            
+            _ = builder.Services.AddSingleton<RespawnService>();
+            _ = builder.Services.AddHostedService<RespawnService>(provider => provider.GetService<RespawnService>()!);
+
             _ = builder.Services.AddCors(options =>
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    _ = builder.WithOrigins("0.0.0.0") 
-                           .AllowAnyHeader()
-                           .AllowAnyMethod()
-                           .AllowCredentials();
+                    _ = builder
+                            .SetIsOriginAllowed(origin => true)
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
                 });
             });
 
-         
             _ = builder.Logging.AddConsole();
             _ = builder.Logging.SetMinimumLevel(LogLevel.Information);
 
             var app = builder.Build();
 
-         
             if (app.Environment.IsDevelopment())
             {
                 _ = app.UseDeveloperExceptionPage();
             }
 
+            _ = app.UseStaticFiles();
             _ = app.UseRouting();
             _ = app.UseCors();
 
-          
-            _ = app.MapHub<MobaHub>("/mobahub");
+            _ = app.MapControllers();
+            _ = app.MapHub<MobaGameHub>("/mobahub");
 
-           
             var logger = app.Services.GetRequiredService<ILogger<GameServer>>();
             var gameStateManager = app.Services.GetRequiredService<GameStateManager>();
             var gameServer = new GameServer(app, gameStateManager, logger);
-            gameServer.Start(); 
+            gameServer.Start();
         }
     }
 }

@@ -83,7 +83,7 @@ namespace MobaSignalRServer
                         {
                             try
                             {
-                                var hubContext = _app.Services.GetRequiredService<Microsoft.AspNetCore.SignalR.IHubContext<MobaHub>>();
+                                var hubContext = _app.Services.GetRequiredService<IHubContext<MobaGameHub>>();
                                 if (!string.IsNullOrEmpty(match.MatchId))
                                 {
                                     await hubContext.Clients.Group(match.MatchId).SendAsync("PlayerRespawned", player);

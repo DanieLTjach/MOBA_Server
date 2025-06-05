@@ -7,30 +7,49 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
+using MobaSignalRServer.Models.Heroes;
 
 
 namespace MobaSignalRServer
 {
+    
+public enum MatchState
+{
+    Waiting,
+    InProgress,
+    Finished
+}
+
     public class Player
     {
-        public string? ConnectionId { get; set; }
-        public int TeamId { get; set; } 
-        public DateTime LastDeathTime { get; set; }
-        public string? Username { get; set; }
-        public int HeroId { get; set; }
-        public Vector2 Position { get; set; }
-        public float Health { get; set; }
-        public float Mana { get; set; }
-        public bool IsAlive { get; set; }
-        public DateTime LastUpdateTime { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string ConnectionId { get; set; } = string.Empty;
+         public int HeroId { get; set; }
+        public int TeamId { get; set; }
+        public float Health { get; set; } = 100f;
+        public float Mana { get; set; } = 100f;
+        public bool IsAlive { get; set; } = true;
+        public DateTime LastDeathTime { get; set; } = DateTime.MinValue;
+        public DateTime LastUpdateTime { get; set; } = DateTime.UtcNow;
+        public System.Numerics.Vector2 Position { get; set; } = new(0, 0);
+        public Hero? Hero { get; set; }
+
+        public void InitializeHero(int heroId)
+        {
+            Hero = HeroFactory.CreateHero(heroId);
+            Health = Hero.BaseHealth;
+            Mana = Hero.BaseMana;
+        }
     }
 
     public class GameMatch
     {
-        public string? MatchId { get; set; }
-        public Dictionary<string, Player> Players { get; set; } = new Dictionary<string, Player>();
-        public DateTime StartTime { get; set; }
-        public bool IsActive { get; set; }
+        public string MatchId { get; set; } = string.Empty;
+    public DateTime StartTime { get; set; }
+    public bool IsActive { get; set; } = false;
+    public MatchState MatchState { get; set; } = MatchState.Waiting;
+
+    public Dictionary<string, Player> Players { get; set; } = new();
     }
 
     public class GameStateManager(ILogger<GameStateManager> logger)
@@ -45,7 +64,7 @@ namespace MobaSignalRServer
             {
                 MatchId = matchId,
                 StartTime = DateTime.UtcNow,
-                IsActive = true
+                IsActive = false
             };
 
             _activeMatches[matchId] = match;
@@ -178,6 +197,7 @@ namespace MobaSignalRServer
                 Position = new Vector2(0, 0),
                 LastUpdateTime = DateTime.UtcNow
             };
+            player.InitializeHero(heroId);
 
             await Clients.Caller.SendAsync("RegistrationConfirmed", player);
             _logger.LogInformation($"Player registered: {username}, Hero ID: {heroId}");
@@ -271,6 +291,8 @@ namespace MobaSignalRServer
             _logger.LogInformation($"Player {player.Username} used ability {abilityId}");
         }
 
+        private readonly Dictionary<string, Timer> _respawnTimers = new Dictionary<string, Timer>();
+
         public async Task AttackPlayer(string matchId, string targetPlayerId)
         {
             var match = _gameState.GetMatch(matchId);
@@ -281,18 +303,100 @@ namespace MobaSignalRServer
                 return;
             }
 
+            // Проверяем, что цель жива и из другой команды
+            if (!target.IsAlive || target.TeamId == attacker.TeamId)
+            {
+                return;
+            }
+
             target.Health = Math.Max(0, target.Health - 10);
             
             if (target.Health <= 0)
             {
                 target.IsAlive = false;
+                target.LastDeathTime = DateTime.UtcNow;
+                
+                // Устанавливаем позицию на спавн
+                target.Position = GetSpawnPosition(target.TeamId);
+                
                 await Clients.Group(matchId).SendAsync("PlayerDied", targetPlayerId);
                 _logger.LogInformation($"Player {target.Username} died");
 
+                // Запускаем таймер возрождения
+                StartRespawnTimer(matchId, targetPlayerId, target);
             }
 
             await Clients.Group(matchId).SendAsync("PlayerAttacked", Context.ConnectionId, targetPlayerId, target.Health);
             _logger.LogInformation($"Player {attacker.Username} attacked {target.Username}");
+        }
+
+        private void StartRespawnTimer(string matchId, string playerId, Player player)
+        {
+            // Отменяем предыдущий таймер, если он есть
+            if (_respawnTimers.ContainsKey(playerId))
+            {
+                _respawnTimers[playerId].Dispose();
+                _respawnTimers.Remove(playerId);
+            }
+
+            // Создаем новый таймер на 20 секунд
+            var timer = new Timer(async _ =>
+            {
+                await RespawnPlayer(matchId, playerId);
+                
+                if (_respawnTimers.ContainsKey(playerId))
+                {
+                    _respawnTimers[playerId].Dispose();
+                    _respawnTimers.Remove(playerId);
+                }
+                
+            }, null, TimeSpan.FromSeconds(20), TimeSpan.FromMilliseconds(-1));
+
+            _respawnTimers[playerId] = timer;
+        }
+
+        private async Task RespawnPlayer(string matchId, string playerId)
+        {
+            var match = _gameState.GetMatch(matchId);
+            if (match == null || !match.Players.TryGetValue(playerId, out var player))
+            {
+                return;
+            }
+
+            // Восстанавливаем игрока
+            player.IsAlive = true;
+            player.Health = 100f;
+            player.Mana = 100f;
+            player.Position = GetSpawnPosition(player.TeamId);
+
+            await Clients.Group(matchId).SendAsync("PlayerRespawned", player);
+            _logger.LogInformation($"Player {player.Username} respawned");
+        }
+
+        private System.Numerics.Vector2 GetSpawnPosition(int teamId)
+        {
+            return teamId switch
+            {
+                1 => new System.Numerics.Vector2(-7f, 0f),
+                2 => new System.Numerics.Vector2(7f, 0f),
+                _ => new System.Numerics.Vector2(0f, 0f)
+            };
+        }
+
+        public async Task RequestRespawn(string matchId)
+        {
+            var match = _gameState.GetMatch(matchId);
+            if (match == null || !match.Players.TryGetValue(Context.ConnectionId, out var player))
+            {
+                return;
+            }
+
+            // Проверяем, прошло ли достаточно времени с момента смерти
+            var timeSinceDeath = DateTime.UtcNow - player.LastDeathTime;
+            if (timeSinceDeath.TotalSeconds >= 20 && !player.IsAlive)
+            {
+                await RespawnPlayer(matchId, Context.ConnectionId);
+            }
         }
         public async Task SendMessage(string matchId, string message)
         {
@@ -327,10 +431,11 @@ namespace MobaSignalRServer
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    _ = builder.WithOrigins("0.0.0.0") 
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
+                    _ = builder
+                         .SetIsOriginAllowed(origin => true) // разрешить все origin
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
                 });
             });
         }

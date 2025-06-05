@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "defaultProvider": "filesystem",
+  "providers": {
+    "filesystem": {
+      "wwwroot": {
+        "basePath": "_content/SignalRWebpack",
+        "patterns": {
+          "js/**/*": true
+        }
+      }
+    }
+  }
+}
